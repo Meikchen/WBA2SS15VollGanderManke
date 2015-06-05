@@ -1,0 +1,59 @@
+app.post('/equipment/kamera', function(req, res){
+        var newCam = req.body;
+    
+        db.incr('id:kamera', function(err, rep){
+            newCam.id = rep;
+            db.set('kamera:' + newCam.id, JSON.stringify(newCam), function(err, rep){
+                res.json(newCam); 
+            });
+        });
+    });
+	
+	
+	app.put('/equipment/kamera/:id', function(req, res){
+    db.exists('equipment/kamera:'+req.params.id, function(err, rep){
+        if (rep == 1){
+            var updatedCam = req.body;
+            updatedCam.id = req.params.id;
+            db.set('kamera:'+req.params.id, JSON.stringify(updatedCam), function(err, rep){
+                res.json(updatedCam);
+            });
+        }
+        else {
+            res.status(404).type('text').send('Die Kamera mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    });  
+});
+
+app.delete('equipment/kamera:id', function(req, res){
+    db.del('equipment/kamera:'+req.params.id, function(err, rep){
+        if(rep == 1){
+            res.status(200).type('text').send('OK');
+        }
+        else{
+            res.status(404).type('text').send('Die Kamera mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    }); 
+});
+
+app.get("equipment/kamera", function(req, res){
+    db.keys('equipment/kamera:*', function(err, rep){
+        var cam = []; 
+        
+        if(rep.length == 0) {
+            res.json(cam);
+            return;
+        }
+        
+        db.mget(rep, function(err, rep){
+           rep.forEach(function(val){
+               equipment/kamera.push(JSON.parse(val));
+           });
+        
+            cam = equipment/kamera.map(function(cam){
+                return {id: cam.id, name: cam.name};
+            });
+            res.json(equipment/kamera);
+        });
+    }); 
+});
