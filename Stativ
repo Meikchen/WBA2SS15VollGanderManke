@@ -1,0 +1,59 @@
+app.post('/equipment/stativ', function(req, res){
+        var newStv = req.body;
+    
+        db.incr('id:stativ', function(err, rep){
+            newStv.id = rep;
+            db.set('stativ:' + newStv.id, JSON.stringify(newStv), function(err, rep){
+                res.json(newStv); 
+            });
+        });
+    });
+	
+	
+	app.put('/equipment/stativ:id', function(req, res){
+    db.exists('equipment/stativ:'+req.params.id, function(err, rep){
+        if (rep == 1){
+            var updatedStv = req.body;
+            updatedStv.id = req.params.id;
+            db.set('stativ:'+req.params.id, JSON.stringify(updatedStv), function(err, rep){
+                res.json(updatedStv);
+            });
+        }
+        else {
+            res.status(404).type('text').send('Das Stativ mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    });  
+});
+
+app.delete('equipment/stativ:id', function(req, res){
+    db.del('equipment/stativ:'+req.params.id, function(err, rep){
+        if(rep == 1){
+            res.status(200).type('text').send('OK');
+        }
+        else{
+            res.status(404).type('text').send('Das Stativ mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    }); 
+});
+
+app.get("equipment/stativ", function(req, res){
+    db.keys('equipment/stativ:*', function(err, rep){
+        var Stv = []; 
+        
+        if(rep.length == 0) {
+            res.json(Stv);
+            return;
+        }
+        
+        db.mget(rep, function(err, rep){
+           rep.forEach(function(val){
+               equipment/stativ.push(JSON.parse(val));
+           });
+        
+            stv = equipment/stativ.map(function(stv){
+                return {id: stv.id, name: stv.name};
+            });
+            res.json(equipment/stativ);
+        });
+    }); 
+});
