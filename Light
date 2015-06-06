@@ -1,0 +1,59 @@
+app.post('/equipment/light', function(req, res){
+        var newLi = req.body;
+    
+        db.incr('id:light', function(err, rep){
+            newLi.id = rep;
+            db.set('light:' + newLi.id, JSON.stringify(newLi), function(err, rep){
+                res.json(newLi); 
+            });
+        });
+    });
+	
+	
+	app.put('/equipment/light:id', function(req, res){
+    db.exists('equipment/light:'+req.params.id, function(err, rep){
+        if (rep == 1){
+            var updatedLi = req.body;
+            updatedLi.id = req.params.id;
+            db.set('light:'+req.params.id, JSON.stringify(updatedLi), function(err, rep){
+                res.json(updatedLi);
+            });
+        }
+        else {
+            res.status(404).type('text').send('Das Licht set mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    });  
+});
+
+app.delete('equipment/light:id', function(req, res){
+    db.del('equipment/light:'+req.params.id, function(err, rep){
+        if(rep == 1){
+            res.status(200).type('text').send('OK');
+        }
+        else{
+            res.status(404).type('text').send('Das Licht Set mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    }); 
+});
+
+app.get("equipment/light", function(req, res){
+    db.keys('equipment/light:*', function(err, rep){
+        var Li = []; 
+        
+        if(rep.length == 0) {
+            res.json(Li);
+            return;
+        }
+        
+        db.mget(rep, function(err, rep){
+           rep.forEach(function(val){
+               equipment/light.push(JSON.parse(val));
+           });
+        
+            li = equipment/light.map(function(li){
+                return {id: li.id, name: li.name};
+            });
+            res.json(equipment/light);
+        });
+    }); 
+});
