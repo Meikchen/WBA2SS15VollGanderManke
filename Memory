@@ -1,0 +1,59 @@
+app.post('/equipment/memory', function(req, res){
+        var newMem = req.body;
+    
+        db.incr('id:memory', function(err, rep){
+            newMem.id = rep;
+            db.set('memory:' + newMem.id, JSON.stringify(newMem), function(err, rep){
+                res.json(newMem); 
+            });
+        });
+    });
+	
+	
+	app.put('/equipment/memory/:id', function(req, res){
+    db.exists('equipment/memory:'+req.params.id, function(err, rep){
+        if (rep == 1){
+            var updatedMem = req.body;
+            updatedMem.id = req.params.id;
+            db.set('memory:'+req.params.id, JSON.stringify(updatedMem), function(err, rep){
+                res.json(updatedMem);
+            });
+        }
+        else {
+            res.status(404).type('text').send('Die Speichercard mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    });  
+});
+
+app.delete('equipment/memory:id', function(req, res){
+    db.del('equipment/memory:'+req.params.id, function(err, rep){
+        if(rep == 1){
+            res.status(200).type('text').send('OK');
+        }
+        else{
+            res.status(404).type('text').send('Die Speichercard mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    }); 
+});
+
+app.get("equipment/memory", function(req, res){
+    db.keys('equipment/memory:*', function(err, rep){
+        var Mem = []; 
+        
+        if(rep.length == 0) {
+            res.json(Mem);
+            return;
+        }
+        
+        db.mget(rep, function(err, rep){
+           rep.forEach(function(val){
+               equipment/memory.push(JSON.parse(val));
+           });
+        
+            mem = equipment/memory.map(function(mem){
+                return {id: mem.id, name: mem.name};
+            });
+            res.json(equipment/memory);
+        });
+    }); 
+});
