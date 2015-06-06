@@ -1,0 +1,59 @@
+app.post('/equipment/folie', function(req, res){
+        var newFo = req.body;
+    
+        db.incr('id:folie', function(err, rep){
+            newFo.id = rep;
+            db.set('folie:' + newFo.id, JSON.stringify(newFo), function(err, rep){
+                res.json(newFo); 
+            });
+        });
+    });
+	
+	
+	app.put('/equipment/folie:id', function(req, res){
+    db.exists('equipment/folie:'+req.params.id, function(err, rep){
+        if (rep == 1){
+            var updatedFo = req.body;
+            updatedFo.id = req.params.id;
+            db.set('folie:'+req.params.id, JSON.stringify(updatedFo), function(err, rep){
+                res.json(updatedFo);
+            });
+        }
+        else {
+            res.status(404).type('text').send('Die Folie mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    });  
+});
+
+app.delete('equipment/folie:id', function(req, res){
+    db.del('equipment/folie:'+req.params.id, function(err, rep){
+        if(rep == 1){
+            res.status(200).type('text').send('OK');
+        }
+        else{
+            res.status(404).type('text').send('Die Folie mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    }); 
+});
+
+app.get("equipment/folie", function(req, res){
+    db.keys('equipment/folie:*', function(err, rep){
+        var Fo = []; 
+        
+        if(rep.length == 0) {
+            res.json(Fo);
+            return;
+        }
+        
+        db.mget(rep, function(err, rep){
+           rep.forEach(function(val){
+               equipment/folie.push(JSON.parse(val));
+           });
+        
+            fo = equipment/folie.map(function(fo){
+                return {id: fo.id, name: fo.name};
+            });
+            res.json(equipment/folie);
+        });
+    }); 
+});
