@@ -1,0 +1,59 @@
+app.post('/equipment/objektiv', function(req, res){
+        var newObj = req.body;
+    
+        db.incr('id:objektiv', function(err, rep){
+            newObj.id = rep;
+            db.set('objektiv:' + newObj.id, JSON.stringify(newObj), function(err, rep){
+                res.json(newObj); 
+            });
+        });
+    });
+	
+	
+	app.put('/equipment/objektiv:id', function(req, res){
+    db.exists('equipment/objektiv:'+req.params.id, function(err, rep){
+        if (rep == 1){
+            var updatedObj = req.body;
+            updatedObj.id = req.params.id;
+            db.set('objektiv:'+req.params.id, JSON.stringify(updatedObj), function(err, rep){
+                res.json(updatedObj);
+            });
+        }
+        else {
+            res.status(404).type('text').send('Das Objektiv mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    });  
+});
+
+app.delete('equipment/objektiv:id', function(req, res){
+    db.del('equipment/objektiv:'+req.params.id, function(err, rep){
+        if(rep == 1){
+            res.status(200).type('text').send('OK');
+        }
+        else{
+            res.status(404).type('text').send('Das Objektiv mit der ID ' + req.params.id + ' wurde nicht gefunden');
+        }
+    }); 
+});
+
+app.get("equipment/objektiv", function(req, res){
+    db.keys('equipment/objektiv:*', function(err, rep){
+        var Obj = []; 
+        
+        if(rep.length == 0) {
+            res.json(Obj);
+            return;
+        }
+        
+        db.mget(rep, function(err, rep){
+           rep.forEach(function(val){
+               equipment/objektiv.push(JSON.parse(val));
+           });
+        
+            objektiv = equipment/objektiv.map(function(Obj){
+                return {id: Obj.id, name: Obj.name};
+            });
+            res.json(equipment/objektiv);
+        });
+    }); 
+});
